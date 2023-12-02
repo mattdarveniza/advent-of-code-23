@@ -37,3 +37,33 @@ export async function validGames(filePath: string) {
 
   return validGames;
 }
+
+export async function powerOfGames(filePath: string) {
+  const f = await Deno.open(filePath);
+  let power = 0;
+
+  const decoder = new TextDecoder();
+  for await (const uIntLine of readline(f)) {
+    const line = decoder.decode(uIntLine);
+
+    const [, rounds] = line.split(": ");
+    const maxCubes = { red: 0, green: 0, blue: 0 };
+    for (const round of rounds.split("; ")) {
+      for (const cube of round.split(", ")) {
+        const [value, color] = cube.split(" ") as [
+          string,
+          "red" | "green" | "blue"
+        ];
+
+        if (color in LIMITS) {
+          maxCubes[color] = Math.max(maxCubes[color], parseInt(value, 10));
+        }
+      }
+    }
+
+    power += Object.values(maxCubes)
+      .filter((v) => v !== 0)
+      .reduce((a, b) => a * b, 1);
+  }
+  return power;
+}

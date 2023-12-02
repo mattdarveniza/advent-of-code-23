@@ -1,4 +1,4 @@
 import { sumNumbers } from "./01/main.ts";
-import { validGames } from "./02/index.ts";
+import { validGames, powerOfGames } from "./02/index.ts";
 
-console.log(await validGames("02/games.txt"));
+console.log(await powerOfGames("02/games.txt"));
