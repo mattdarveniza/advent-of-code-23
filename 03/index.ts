@@ -1,16 +1,4 @@
-import { readline } from "https://deno.land/x/readline@v1.1.0/mod.ts";
-
-async function readFile(filePath: string) {
-  const f = await Deno.open(filePath);
-
-  const decoder = new TextDecoder();
-  const lines = [];
-  for await (const uIntLine of readline(f)) {
-    lines.push(decoder.decode(uIntLine));
-  }
-
-  return lines;
-}
+import { readFile } from "../readFile.ts";
 
 const SYMBOL_REGEX = /[^\d\.]/g;
 
