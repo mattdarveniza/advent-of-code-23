@@ -6,5 +6,6 @@ import {
   lowestLocationFromSeedNumbers,
   lowestLocationFromSeedRanges,
 } from "./05/index.ts";
+import { marginOfError } from "./06/index.ts";
 
-console.log(await lowestLocationFromSeedRanges("05/input.txt"));
+console.log(await marginOfError("06/input.txt"));
