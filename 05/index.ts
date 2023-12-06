@@ -47,14 +47,9 @@ export async function lowestLocationFromSeedNumbers(filePath: string) {
   return Math.min(...locations);
 }
 
-function* seedsFromRanges(ranges: [number, number][]) {
-  for (const [start, end] of ranges) {
-    for (let i = start; i <= end; i++) {
-      yield i;
-    }
-  }
-}
-
+// NOTE: Assumed the ranges in input file are contiguous and non-overlapping
+// (which in this case they are). Won't work if there are gaps between ranges in
+// the map
 export async function lowestLocationFromSeedRanges(filePath: string) {
   const lines: string[] = await readFile(filePath);
 
@@ -71,33 +66,65 @@ export async function lowestLocationFromSeedRanges(filePath: string) {
       return acc;
     }, []);
 
-  const seeds = seedsFromRanges(seedRanges);
-
-  const seedCount = seedRanges.reduce((acc, [, end]) => acc + end, 0);
-
-  console.log(`Total values: ${seedCount}`);
-
   const maps = parseLinesToSeedMap(lines);
-  const locations = seedsToLocations(seeds, maps);
 
-  let min = Infinity;
-  let i = 0;
-  let progress = 0;
-  for (const location of locations) {
-    const newProgress = Math.floor((i++ / seedCount) * 100);
-    console.log(`${i} / ${seedCount} ${newProgress}%: ${min}`);
-    if (newProgress > progress) {
-      progress = newProgress;
-      console.log(
-        `\n----------------- Progress: ${progress}% -----------------\n`
-      );
+  const locationRanges = maps.reduce((ranges, map) => {
+    // pre-sort the mapping list by source to help with stable range-creation
+    const sortedMap = map.toSorted((a, b) => a[1] - b[1]);
+    const sortedRanges = ranges.toSorted((a, b) => a[0] - b[0]);
+
+    const outputRanges: [number, number][] = [];
+    for (const [start, end] of sortedRanges) {
+      for (const [i, [destination, source, range]] of sortedMap.entries()) {
+        const diff = destination - source;
+
+        // When the range is before the start of the maps
+        if (i === 0 && start < source) {
+          if (end < source) {
+            // no overlap
+            outputRanges.push([start, end]);
+          } else {
+            // overlap
+            outputRanges.push([start, source - 1]);
+          }
+        } else {
+          // When the range start is within the map range
+          if (start < source + range) {
+            let rangeStart = start + diff;
+            // When the range start is before the map range (ie some has previously been mapped)
+            if (start < source) {
+              rangeStart = source + diff;
+            }
+
+            // When the range end is within the map range
+            if (end < source + range) {
+              outputRanges.push([rangeStart, end + diff]);
+              break;
+            }
+            // When the end of range is larger than the map range
+            else {
+              outputRanges.push([rangeStart, source + range + diff]);
+            }
+          }
+        }
+      }
+
+      // When the range is after the end of the maps
+      const lastRangeMap = sortedMap.at(-1);
+      if (lastRangeMap && lastRangeMap[1] + lastRangeMap[2] < end) {
+        if (lastRangeMap[1] + lastRangeMap[2] < start) {
+          outputRanges.push([start, end]);
+        } else {
+          outputRanges.push([lastRangeMap[1] + lastRangeMap[2] + 1, end]);
+        }
+      }
     }
+    console.log(JSON.stringify(outputRanges));
+    return outputRanges;
+  }, seedRanges);
 
-    if (location < min) {
-      min = location;
-    }
-  }
+  const smallestLocation = Math.min(...locationRanges.map((range) => range[0]));
 
-  console.log("\n------------ Complete ------------\n");
-  return min;
+  // const locations = seedsToLocations(seeds, maps);
+  return smallestLocation;
 }
