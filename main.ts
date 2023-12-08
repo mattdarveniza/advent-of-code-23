@@ -8,6 +8,6 @@ import {
 } from "./05/index.ts";
 import { joinedWinningTimes, marginOfError } from "./06/index.ts";
 import { rankedHands } from "./07/index.ts";
-import { stepsToDestination } from "./08/index.ts";
+import { stepsToDestination, ghostStepsToDestination } from "./08/index.ts";
 
-console.log(await stepsToDestination("08/input.txt"));
+console.log(await ghostStepsToDestination("08/input.txt"));
