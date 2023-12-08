@@ -16,7 +16,6 @@ const cardRanks = [
   "A",
   "K",
   "Q",
-  "J",
   "T",
   "9",
   "8",
@@ -26,17 +25,19 @@ const cardRanks = [
   "4",
   "3",
   "2",
+  "J",
 ];
 
 function countOccurences(hand: string) {
   const characters = new Set(hand);
   return [...characters].map(
-    (character) => hand.match(new RegExp(character, "g"))?.length ?? 0
+    (character) => hand.match(new RegExp(`${character}|J`, "g"))?.length ?? 0
   );
 }
 
 function handType(hand: string) {
   const occurences = countOccurences(hand);
+
   if (occurences.includes(5)) {
     return "Five";
   }
@@ -45,7 +46,14 @@ function handType(hand: string) {
     return "Four";
   }
 
-  if (occurences.includes(3) && occurences.includes(2)) {
+  // With joker this is a special case since it can't be used for both combos.
+  // If a joker is in the hand, there should be 3 matches of each card in order
+  // to count as a full house, as the joker will be counted twice in occurnces
+  if (
+    hand.includes("J")
+      ? occurences.filter((v) => v === 3).length === 2
+      : occurences.includes(3) && occurences.includes(2)
+  ) {
     return "Full House";
   }
 
@@ -53,7 +61,12 @@ function handType(hand: string) {
     return "Three";
   }
 
-  if (occurences.filter((x) => x === 2).length === 2) {
+  // Same as for the full house, two pair has different rules with a joker
+  if (
+    hand.includes("J")
+      ? occurences.includes(3) && occurences.includes(2)
+      : occurences.filter((x) => x === 2).length === 2
+  ) {
     return "Two Pair";
   }
 
