@@ -6,6 +6,7 @@ import {
   lowestLocationFromSeedNumbers,
   lowestLocationFromSeedRanges,
 } from "./05/index.ts";
-import { marginOfError } from "./06/index.ts";
+import { joinedWinningTimes, marginOfError } from "./06/index.ts";
+import { rankedHands } from "./07/index.ts";
 
-console.log(await marginOfError("06/input.txt"));
+console.log(await rankedHands("07/input.txt"));
