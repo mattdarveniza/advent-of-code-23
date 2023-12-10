@@ -9,5 +9,6 @@ import {
 import { joinedWinningTimes, marginOfError } from "./06/index.ts";
 import { rankedHands } from "./07/index.ts";
 import { stepsToDestination, ghostStepsToDestination } from "./08/index.ts";
+import { sumNextSteps } from "./09/index.ts";
 
-console.log(await ghostStepsToDestination("08/input.txt"));
+console.log(await sumNextSteps("09/input.txt"));
