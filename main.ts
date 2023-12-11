@@ -10,5 +10,6 @@ import { joinedWinningTimes, marginOfError } from "./06/index.ts";
 import { rankedHands } from "./07/index.ts";
 import { stepsToDestination, ghostStepsToDestination } from "./08/index.ts";
 import { sumNextSteps, sumPrevSteps } from "./09/index.ts";
+import { furthestDistanceOfLoop } from "./10/index.ts";
 
-console.log(await sumPrevSteps("09/input.txt"));
+console.log(await furthestDistanceOfLoop("10/input.txt"));
