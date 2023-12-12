@@ -13,4 +13,4 @@ import { sumNextSteps, sumPrevSteps } from "./09/index.ts";
 import { furthestDistanceOfLoop, tilesWithinLoop } from "./10/index.ts";
 import { sumOfShortestPaths } from "./11/index.ts";
 
-console.log(await sumOfShortestPaths("11/sample.txt"));
+console.log(await sumOfShortestPaths("11/input.txt"));

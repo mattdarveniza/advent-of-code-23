@@ -1,47 +1,70 @@
 import { readFile } from "../readFile.ts";
 
-function expandSpace(lines: string[]) {
-  let expandedSpace = [] as string[];
+function expandSpace(lines: string[], expansionFactor = 2) {
+  let expandedSpace = [...lines] as string[];
 
-  // Expand rows
-  for (const line of lines) {
-    expandedSpace.push(line);
-    if ([...line].every((c) => c === ".")) {
-      expandedSpace.push(line);
-    }
-  }
+  const insertedSpace = "_".repeat(expansionFactor);
 
   // Expand columns
   let columnsAdded = 0;
   for (let i = 0; i < lines[0].length; i++) {
+    console.log(`Column ${i}`);
     if (lines.every((line) => line[i] === ".")) {
-      expandedSpace = expandedSpace.map(
-        (line) =>
-          `${line.slice(0, i + columnsAdded)}.${line.slice(i + columnsAdded)}`
-      );
-      columnsAdded++;
+      expandedSpace = expandedSpace.map((line) => {
+        return `${line.slice(0, i + columnsAdded)}${insertedSpace}${line.slice(
+          i + columnsAdded + 1
+        )}`;
+      });
+      columnsAdded += expansionFactor - 1;
     }
   }
 
-  return expandedSpace;
+  const expandedLine = "_".repeat(expandedSpace[0].length);
+
+  // Expand rows
+  const linesToSkip: number[] = [];
+  expandedSpace = expandedSpace.flatMap((line, i) => {
+    console.log(`Line ${i}`);
+    const ogLine = lines[i];
+    if ([...ogLine].every((c) => c === ".")) {
+      linesToSkip.push(i + linesToSkip.length * (expansionFactor - 1));
+      const newLines = new Array(expansionFactor).fill(expandedLine);
+      return newLines;
+    } else {
+      return [line];
+    }
+  });
+
+  return [expandedSpace, linesToSkip] as const;
 }
 
 export async function sumOfShortestPaths(filePath: string) {
   const lines = await readFile(filePath);
 
-  const expandedSpace = expandSpace(lines);
+  const expansionFactor = 1000000;
+  const [expandedSpace, linesToSkip] = expandSpace(lines, expansionFactor);
 
-  console.log(expandedSpace.join("\n"));
+  // console.log(expandedSpace.join("\n"));
+  console.log(linesToSkip);
 
   // Build list of galaxies
   const galaxyCoordinates: [number, number][] = [];
   for (const [x, line] of expandedSpace.entries()) {
-    const lineGalaxies = line.matchAll(/#/g);
+    if (linesToSkip.some((i) => x >= i && x < i + expansionFactor)) {
+      console.log(`skipping ${x}`);
+      continue;
+    }
+    console.log(`Line length: ${line.length}`);
+    const lineGalaxies = [...line]
+      .map((c, i) => (c === "#" ? i : null))
+      .filter((i): i is number => i !== null);
     for (const galaxy of lineGalaxies) {
-      galaxyCoordinates.push([x, galaxy.index!]);
+      console.log(`Galaxy at ${x}, ${galaxy}`);
+      galaxyCoordinates.push([x, galaxy]);
     }
   }
 
+  console.log(galaxyCoordinates.length);
   // Calculate distances between pairs of galaxies
   const summedDistances = galaxyCoordinates.reduce((outerAcc, [x1, y1], i) => {
     return (
