@@ -12,5 +12,9 @@ import { stepsToDestination, ghostStepsToDestination } from "./08/index.ts";
 import { sumNextSteps, sumPrevSteps } from "./09/index.ts";
 import { furthestDistanceOfLoop, tilesWithinLoop } from "./10/index.ts";
 import { sumOfShortestPaths } from "./11/index.ts";
+import {
+  numberOfCombinations,
+  numberOfUnfoldedCombinations,
+} from "./12/index.ts";
 
-console.log(await sumOfShortestPaths("11/input.txt"));
+console.log(await numberOfUnfoldedCombinations("12/input.txt"));
