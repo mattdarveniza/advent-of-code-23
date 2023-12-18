@@ -1,5 +1,52 @@
 import { readFile } from "../readFile.ts";
 
+function* smudgedPatterns(pattern: string[]) {
+  for (let y = 0; y < pattern.length; y++) {
+    for (let x = 0; x < pattern[0].length; x++) {
+      yield pattern.map((line, iY) => {
+        if (iY !== y) {
+          return line;
+        }
+
+        return [...line].toSpliced(x, 1, line[x] === "#" ? "." : "#").join("");
+      });
+    }
+  }
+}
+
+function hasVerticalReflection(pattern: string[]): number | false {
+  for (let i = 1; i < pattern[0].length; i++) {
+    const verticallyReflected = pattern.every((line) => {
+      const firstHalf = line.slice(Math.max(0, i * 2 - line.length), i);
+      const secondHalf = [...line.slice(i, i * 2)].toReversed().join("");
+
+      return firstHalf === secondHalf;
+    });
+
+    if (verticallyReflected) {
+      return i;
+    }
+  }
+
+  return false;
+}
+
+function hasHorizontalReflection(pattern: string[]): number | false {
+  for (let i = 1; i < pattern.length; i++) {
+    const firstHalf = pattern.slice(Math.max(0, i * 2 - pattern.length), i);
+    const secondHalf = pattern.slice(i, i * 2).toReversed();
+
+    const horizontallyReflected = firstHalf.every(
+      (line, index) => line === secondHalf[index]
+    );
+    if (horizontallyReflected) {
+      return i;
+    }
+  }
+
+  return false;
+}
+
 export async function summarizeReflections(filePath: string) {
   const lines = await readFile(filePath);
 
@@ -18,32 +65,40 @@ export async function summarizeReflections(filePath: string) {
   );
 
   let sum = 0;
-  for (const pattern of patterns) {
-    // find vertical reflections
-    for (let i = 1; i < pattern[0].length; i++) {
-      const verticallyReflected = pattern.every((line) => {
-        const firstHalf = line.slice(Math.max(0, i * 2 - line.length), i);
-        const secondHalf = [...line.slice(i, i * 2)].toReversed().join("");
+  for (const originalPattern of patterns) {
+    const originalVerticalReflection = hasVerticalReflection(originalPattern);
+    const originalHorizontalReflection =
+      hasHorizontalReflection(originalPattern);
 
-        return firstHalf === secondHalf;
-      });
-
-      if (verticallyReflected) {
-        sum += i;
-        break;
+    for (const pattern of smudgedPatterns(originalPattern)) {
+      let found = false;
+      // find vertical reflections
+      const verticalReflection = hasVerticalReflection(pattern);
+      if (
+        verticalReflection &&
+        !(
+          originalVerticalReflection &&
+          verticalReflection === originalVerticalReflection
+        )
+      ) {
+        sum += verticalReflection;
+        found = true;
       }
-    }
 
-    // find horizontal reflections
-    for (let i = 1; i < pattern.length; i++) {
-      const firstHalf = pattern.slice(Math.max(0, i * 2 - pattern.length), i);
-      const secondHalf = pattern.slice(i, i * 2).toReversed();
+      // find horizontal reflections
+      const horizontalReflection = hasHorizontalReflection(pattern);
+      if (
+        horizontalReflection &&
+        !(
+          originalHorizontalReflection &&
+          horizontalReflection === originalHorizontalReflection
+        )
+      ) {
+        sum += horizontalReflection * 100;
+        found = true;
+      }
 
-      const horizontallyReflected = firstHalf.every(
-        (line, index) => line === secondHalf[index]
-      );
-      if (horizontallyReflected) {
-        sum += i * 100;
+      if (found) {
         break;
       }
     }
