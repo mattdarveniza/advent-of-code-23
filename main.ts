@@ -16,5 +16,6 @@ import {
   numberOfCombinations,
   numberOfUnfoldedCombinations,
 } from "./12/index.ts";
+import { summarizeReflections } from "./13/index.ts";
 
-console.log(await numberOfUnfoldedCombinations("12/input.txt"));
+console.log(await summarizeReflections("13/input.txt"));
