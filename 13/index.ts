@@ -14,7 +14,10 @@ function* smudgedPatterns(pattern: string[]) {
   }
 }
 
-function hasVerticalReflection(pattern: string[]): number | false {
+function hasVerticalReflection(
+  pattern: string[],
+  ignoreValue?: number | false
+): number | false {
   for (let i = 1; i < pattern[0].length; i++) {
     const verticallyReflected = pattern.every((line) => {
       const firstHalf = line.slice(Math.max(0, i * 2 - line.length), i);
@@ -23,7 +26,7 @@ function hasVerticalReflection(pattern: string[]): number | false {
       return firstHalf === secondHalf;
     });
 
-    if (verticallyReflected) {
+    if (verticallyReflected && i !== ignoreValue) {
       return i;
     }
   }
@@ -31,7 +34,10 @@ function hasVerticalReflection(pattern: string[]): number | false {
   return false;
 }
 
-function hasHorizontalReflection(pattern: string[]): number | false {
+function hasHorizontalReflection(
+  pattern: string[],
+  ignoreValue?: number | false
+): number | false {
   for (let i = 1; i < pattern.length; i++) {
     const firstHalf = pattern.slice(Math.max(0, i * 2 - pattern.length), i);
     const secondHalf = pattern.slice(i, i * 2).toReversed();
@@ -39,7 +45,7 @@ function hasHorizontalReflection(pattern: string[]): number | false {
     const horizontallyReflected = firstHalf.every(
       (line, index) => line === secondHalf[index]
     );
-    if (horizontallyReflected) {
+    if (horizontallyReflected && i !== ignoreValue) {
       return i;
     }
   }
@@ -69,11 +75,14 @@ export async function summarizeReflections(filePath: string) {
     const originalVerticalReflection = hasVerticalReflection(originalPattern);
     const originalHorizontalReflection =
       hasHorizontalReflection(originalPattern);
-
+    let anyPatternFound = false;
     for (const pattern of smudgedPatterns(originalPattern)) {
       let found = false;
       // find vertical reflections
-      const verticalReflection = hasVerticalReflection(pattern);
+      const verticalReflection = hasVerticalReflection(
+        pattern,
+        originalVerticalReflection
+      );
       if (
         verticalReflection &&
         !(
@@ -86,7 +95,10 @@ export async function summarizeReflections(filePath: string) {
       }
 
       // find horizontal reflections
-      const horizontalReflection = hasHorizontalReflection(pattern);
+      const horizontalReflection = hasHorizontalReflection(
+        pattern,
+        originalHorizontalReflection
+      );
       if (
         horizontalReflection &&
         !(
@@ -99,8 +111,13 @@ export async function summarizeReflections(filePath: string) {
       }
 
       if (found) {
+        anyPatternFound = true;
         break;
       }
+    }
+
+    if (!anyPatternFound) {
+      debugger;
     }
   }
 
