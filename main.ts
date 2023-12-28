@@ -17,5 +17,6 @@ import {
   numberOfUnfoldedCombinations,
 } from "./12/index.ts";
 import { summarizeReflections } from "./13/index.ts";
+import { totalLoad, totalLoadAfterCycles } from "./14/index.ts";
 
-console.log(await summarizeReflections("13/input.txt"));
+console.log(await totalLoadAfterCycles("14/input.txt"));
